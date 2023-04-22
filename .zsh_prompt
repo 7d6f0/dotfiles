@@ -1,0 +1,85 @@
+setopt prompt_subst
+autoload -Uz add-zsh-hook vcs_info
+add-zsh-hook precmd vcs_info
+zstyle ':vcs_info:git:*' formats '%s:%b' '%u%c%m'
+zstyle ':vcs_info:git:*' actionformats '%s:%b' '%u%c%m' '%a'
+zstyle ':vcs_info:*' check-for-changes true
+zstyle ':vcs_info:*' unstagedstr '!'
+zstyle ':vcs_info:*' stagedstr '+'
+zstyle ':vcs_info:git+set-message:*' hooks git-hook-begin git-untracked git-not-pushed
+
++vi-git-hook-begin() {
+  if [[ $(command git rev-parse --is-inside-work-tree 2> /dev/null) != 'true' ]]; then
+    return 1
+  fi
+  return 0
+}
+
++vi-git-untracked() {
+  if [[ "$1" != "1" ]]; then
+    return 0
+  fi
+  if git status --porcelain | grep -m 1 '^??' &>/dev/null
+  then
+    hook_com[unstaged]+='?'
+  fi
+}
+
++vi-git-not-pushed() {
+  if [[ "$1" != "1" ]]; then
+    return 0
+  fi
+  local not_pushed="*"
+  head=$(git rev-parse --verify -q HEAD 2> /dev/null)
+  if [ $? -eq 0 ]; then
+    remotes=($(git rev-parse --remotes 2> /dev/null))
+    if [ "$remotes[*]" ]; then
+      for x in ${remotes[@]}; do
+        if [ "$head" = "$x" ]; then
+          not_pushed=""
+          break
+        fi
+      done
+    else
+      not_pushed=""
+    fi
+  else
+    not_pushed=""
+  fi
+  hook_com[misc]+=$not_pushed
+}
+
+_update_prompt() {
+  local messages
+  local prompt="%F{73}%n%f at %F{74}%M%f in %F{75}%d%f"
+  if [[ -n ${vcs_info_msg_0_} ]]; then
+    [[ -n "$vcs_info_msg_0_" ]] && messages+=("%F{98}${vcs_info_msg_0_}%f")
+    [[ -n "$vcs_info_msg_1_" ]] && messages+=("%F{99}${vcs_info_msg_1_}%f")
+    [[ -n "$vcs_info_msg_2_" ]] && messages+=("%F{160}${vcs_info_msg_2_}%f")
+    prompt+="${(j: :)messages}"
+  fi
+  local virtualenv=$(echo $VIRTUAL_ENV)
+  if [ ! -z ${virtualenv} ]; then
+    local venv=$(basename $(dirname $virtualenv))
+    prompt+=" venv:${venv}"
+  fi
+  if command -v kubectl > /dev/null;then
+    if kubectl config current-context > /dev/null 2>&1; then
+      prompt+=" $(kubectl config current-context):$(kubectl config view --minify --output 'jsonpath={..namespace}'; echo)"
+    fi
+  fi
+  prompt+=" %F{240}[%D{%Y-%m-%d %H:%M:%S}]%f"
+  print $prompt
+}
+
+precmd() {
+  PROMPT='$(_update_prompt)
+%(?.%F{72}.%F{160})%#%f '
+}
+
+re-prompt() {
+  zle .reset-prompt
+  zle .accept-line
+}
+
+zle -N accept-line re-prompt
