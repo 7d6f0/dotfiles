@@ -5,7 +5,8 @@ export PATH="$HOME/.local/bin:$PATH"
 export XDG_CONFIG_HOME="$HOME/.config"
 export XDG_DATA_HOME="$HOME/.local/share"
 if command -v go > /dev/null; then
-  export GOPATH=$(go env GOPATH)
+  GOPATH=$(go env GOPATH)
+  export GOPATH
   export PATH=$PATH:$GOPATH/bin
 fi
 
@@ -15,8 +16,8 @@ bindkey "^[r" redo
 bindkey "^[[Z" reverse-menu-complete
 
 HISTFILE=~/.zsh_history
-HISTSIZE=1000000
 SAVEHIST=1000000
+HISTSIZE=$SAVEHIST
 setopt share_history
 setopt hist_ignore_all_dups
 setopt hist_reduce_blanks
@@ -44,7 +45,7 @@ setopt interactive_comments
 setopt no_flow_control
 setopt no_beep
 
-case ${OSTYPE} in
+case $OSTYPE in
   darwin*)
     alias ls='ls -GF'
     ;;
@@ -63,27 +64,33 @@ alias grep='grep --color=auto'
 # asdf
 export ASDF_DIR="$XDG_DATA_HOME/asdf"
 export ASDF_DATA_DIR="$ASDF_DIR"
-source $ASDF_DIR/asdf.sh
-fpath=(${ASDF_DIR}/completions $fpath)
+source "$ASDF_DIR/asdf.sh"
+[ -d "$ASDF_DIR/completions" ] && fpath=("$ASDF_DIR/completions" "${fpath[@]}")
 
 # fzf
 export FZF_DEFAULT_COMMAND="rg --files --hidden --follow --glob '!.git'"
 export FZF_DEFAULT_OPTS='--height 40% --reverse --border'
 export FZF_TMUX_OPTS='-h 70% -w 70% --reverse'
+export FZF_CTRL_T_COMMAND="$FZF_DEFAULT_COMMAND"
+if command -v bat >/dev/null 2>&1; then
+  export FZF_CTRL_T_OPTS="
+    --preview 'bat -n --color=always {}'
+    --bind 'ctrl-/:change-preview-window(down|hidden|)'"
+fi
 [ -f "${XDG_CONFIG_HOME:-$HOME/.config}"/fzf/fzf.zsh ] && source "${XDG_CONFIG_HOME:-$HOME/.config}"/fzf/fzf.zsh
 
 # ghq
 ghq_list() {
-  cd $(ghq list --full-path | fzf-tmux $(echo $FZF_TMUX_OPTS))
+  cd "$(ghq list --full-path | fzf-tmux "${=FZF_TMUX_OPTS}")" || exit
 }
 zle -N ghq_list_widget ghq_list
 bindkey "^G" ghq_list_widget
 
 # zsh-syntax-highlighting
-source $XDG_DATA_HOME/zsh-syntax-highlighting/zsh-syntax-highlighting.zsh
+source "$XDG_DATA_HOME"/zsh-syntax-highlighting/zsh-syntax-highlighting.zsh
 
 ## prompt
 TERM=xterm-256color
-[ -f ~/.zsh_prompt ] && source ${HOME}/.zsh_prompt
+[ -f ~/.zsh_prompt ] && source "$HOME/.zsh_prompt"
 
 autoload -Uz compinit && compinit

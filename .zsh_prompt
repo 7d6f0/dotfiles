@@ -31,10 +31,10 @@ zstyle ':vcs_info:git+set-message:*' hooks git-hook-begin git-untracked git-not-
   fi
   local not_pushed="*"
   head=$(git rev-parse --verify -q HEAD 2> /dev/null)
-  if [ $? -eq 0 ]; then
+  if [ -n "$head" ]; then
     remotes=($(git rev-parse --remotes 2> /dev/null))
-    if [ "$remotes[*]" ]; then
-      for x in ${remotes[@]}; do
+    if [ "${remotes[*]}" ]; then
+      for x in "${remotes[@]}"; do
         if [ "$head" = "$x" ]; then
           not_pushed=""
           break
@@ -52,15 +52,17 @@ zstyle ':vcs_info:git+set-message:*' hooks git-hook-begin git-untracked git-not-
 _update_prompt() {
   local messages
   local prompt="%F{73}%n%f at %F{74}%M%f in %F{75}%d%f"
-  if [[ -n ${vcs_info_msg_0_} ]]; then
+  if [[ -n "$vcs_info_msg_0_" ]]; then
     [[ -n "$vcs_info_msg_0_" ]] && messages+=("%F{98}${vcs_info_msg_0_}%f")
     [[ -n "$vcs_info_msg_1_" ]] && messages+=("%F{99}${vcs_info_msg_1_}%f")
     [[ -n "$vcs_info_msg_2_" ]] && messages+=("%F{160}${vcs_info_msg_2_}%f")
     prompt+="${(j: :)messages}"
   fi
-  local virtualenv=$(echo $VIRTUAL_ENV)
-  if [ ! -z ${virtualenv} ]; then
-    local venv=$(basename $(dirname $virtualenv))
+  local virtualenv
+  virtualenv=$VIRTUAL_ENV
+  if [ -n "$virtualenv" ]; then
+    local venv
+    venv=$(basename "$(dirname "$virtualenv")")
     prompt+=" venv:${venv}"
   fi
   if command -v kubectl > /dev/null;then
@@ -69,11 +71,11 @@ _update_prompt() {
     fi
   fi
   prompt+=" %F{240}[%D{%Y-%m-%d %H:%M:%S}]%f"
-  print $prompt
+  print "$prompt"
 }
 
 precmd() {
-  PROMPT='$(_update_prompt)
+  prompt='$(_update_prompt)
 %(?.%F{72}.%F{160})%#%f '
 }
 

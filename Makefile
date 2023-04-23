@@ -1,3 +1,4 @@
+SHELL=/bin/bash
 BIN_DIR=$(HOME)/.local/bin
 XDG_CONFIG_HOME=$(HOME)/.config
 XDG_DATA_HOME=$(HOME)/.local/share
@@ -17,8 +18,7 @@ alacritty:
 vim:
 	@echo "### vim ###"
 	ln -snf $(PWD)/.vimrc $(HOME)/
-	curl -fLo $(HOME)/.vim/autoload/plug.vim --create-dirs https://raw.githubusercontent.com/junegunn/vim-plug/master/plug.vim
-	vim +PlugInstall +qal
+	vim +'PlugInstall --sync' +qa
 
 tmux:
 	@echo "### tmux ###"
@@ -52,11 +52,11 @@ ifeq ($(wildcard $(XDG_DATA_HOME)/asdf),)
 else
 	(cd $(XDG_DATA_HOME)/asdf && git pull)
 endif
-	@source $(XDG_DATA_HOME)/asdf/asdf.sh && asdf plugin add golang || true
-	@source $(XDG_DATA_HOME)/asdf/asdf.sh && asdf plugin add python || true
-	@source $(XDG_DATA_HOME)/asdf/asdf.sh && asdf plugin add rust || true
-	@source $(XDG_DATA_HOME)/asdf/asdf.sh && asdf plugin add nodejs || true
-	asdf install
+	source $(XDG_DATA_HOME)/asdf/asdf.sh && asdf plugin add golang || true
+	source $(XDG_DATA_HOME)/asdf/asdf.sh && asdf plugin add python || true
+	source $(XDG_DATA_HOME)/asdf/asdf.sh && asdf plugin add rust || true
+	source $(XDG_DATA_HOME)/asdf/asdf.sh && asdf plugin add nodejs || true
+	source $(XDG_DATA_HOME)/asdf/asdf.sh && asdf install
 
 bin:
 	@echo "### bin ###"
@@ -71,7 +71,7 @@ ifeq ($(shell uname), Linux)
 	curl -fLO "https://dl.k8s.io/release/$$(curl -L -s https://dl.k8s.io/release/stable.txt)/bin/linux/amd64/kubectl"
 	curl -s https://api.github.com/repos/stedolan/jq/releases/latest | grep "browser_download_url.*linux64" | cut -d : -f 2,3 | tr -d \" | xargs -n1 curl -fLO
 	curl -s https://api.github.com/repos/BurntSushi/ripgrep/releases/latest | grep "browser_download_url.*linux-musl" | cut -d : -f 2,3 | tr -d \" | xargs -n1 curl -fLO
-	curl -s https://api.github.com/repos/sharkdp/bat/releases/latest | grep "browser_download_url.*linux-gnu" | cut -d : -f 2,3 | tr -d \" | xargs -n1 curl -fLO
+	curl -s https://api.github.com/repos/sharkdp/bat/releases/latest | grep "browser_download_url.*x86_64.*linux-musl" | cut -d : -f 2,3 | tr -d \" | xargs -n1 curl -fLO
 	curl -s https://api.github.com/repos/x-motemen/ghq/releases/latest | grep "browser_download_url.*linux_amd64" | cut -d : -f 2,3 | tr -d \" | xargs -n1 curl -fLO
 endif
 ifeq ($(wildcard kubectl),)
