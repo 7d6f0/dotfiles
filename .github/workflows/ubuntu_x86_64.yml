@@ -1,0 +1,24 @@
+name: Ubuntu x86_64
+on:
+  push:
+    branches:
+    - main
+  pull_request:
+    branches:
+    - main
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v3
+    - name: Install packages
+      run: sudo apt install --yes curl vim zsh
+    - name: Test install
+      run: make
+    - name: Check idempotency
+      run: make
+    - name: Test uninstall
+      run: make clean
+    - name: Check idempotency
+      run: make clean
