@@ -3,6 +3,11 @@ filetype off
 filetype plugin indent off
 
 " vim-plug
+let data_dir = has('nvim') ? stdpath('data') . '/site' : '~/.vim'
+if empty(glob(data_dir . '/autoload/plug.vim'))
+  silent execute '!curl -fLo '.data_dir.'/autoload/plug.vim --create-dirs  https://raw.githubusercontent.com/junegunn/vim-plug/master/plug.vim'
+  autocmd VimEnter * PlugInstall --sync | source $MYVIMRC
+endif
 call plug#begin('~/.vim/plugged')
   Plug 'junegunn/fzf'
   Plug 'junegunn/fzf.vim'
@@ -84,7 +89,7 @@ if v:version >= 800
   nmap <Leader>j <Plug>(lsp-definition)
   nmap <Leader>v :vsplit<CR><Plug>(lsp-definition)
   nmap <Leader>s :split<CR><Plug>(lsp-definition)
-  autocmd BufWritePre <buffer> LspDocumentFormatSync
+  autocmd BufWritePre *.py,*.go LspDocumentFormatSync
 endif
 
 " airline
@@ -92,6 +97,6 @@ let g:airline#extensions#tabline#enabled = 1
 let g:airline_theme='tokyonight'
 
 " colorscheme
-colorscheme tokyonight
+silent! colorscheme tokyonight
 
 filetype plugin indent on

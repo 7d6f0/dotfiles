@@ -1,12 +1,14 @@
+SHELL=/bin/bash
+BIN_DIR=$(HOME)/.local/bin
 XDG_CONFIG_HOME=$(HOME)/.config
 XDG_DATA_HOME=$(HOME)/.local/share
 
 init: makedir alacritty vim tmux zsh fzf asdf bin
 
 makedir:
-	mkdir -p $(HOME)/.config
-	mkdir -p $(HOME)/.local/bin
+	mkdir -p $(BIN_DIR)
 	mkdir -p $(XDG_CONFIG_HOME)/alacritty
+	mkdir -p $(XDG_DATA_HOME)
 
 alacritty:
 	@echo "### alacritty ###"
@@ -16,8 +18,7 @@ alacritty:
 vim:
 	@echo "### vim ###"
 	ln -snf $(PWD)/.vimrc $(HOME)/
-	curl -fLo $(HOME)/.vim/autoload/plug.vim --create-dirs https://raw.githubusercontent.com/junegunn/vim-plug/master/plug.vim
-	vim +PlugInstall +qal
+	vim +'PlugInstall --sync' +qa
 
 tmux:
 	@echo "### tmux ###"
@@ -30,7 +31,7 @@ zsh:
 ifeq ($(wildcard $(XDG_DATA_HOME)/zsh-syntax-highlighting),)
 	git clone https://github.com/zsh-users/zsh-syntax-highlighting.git $(XDG_DATA_HOME)/zsh-syntax-highlighting
 else
-	cd $(XDG_DATA_HOME)/zsh-syntax-highlighting && git pull
+	(cd $(XDG_DATA_HOME)/zsh-syntax-highlighting && git pull)
 endif
 
 fzf:
@@ -38,10 +39,10 @@ fzf:
 ifeq ($(wildcard $(XDG_CONFIG_HOME)/fzf),)
 	git clone --depth 1 https://github.com/junegunn/fzf.git $(XDG_CONFIG_HOME)/fzf
 else
-	cd $(XDG_CONFIG_HOME)/fzf && git pull
+	(cd $(XDG_CONFIG_HOME)/fzf && git pull)
 endif
 	$(XDG_CONFIG_HOME)/fzf/install --all --xdg --no-update-rc --no-bash --no-fish
-	rsync -a $(XDG_CONFIG_HOME)/fzf/bin/* $(HOME)/.local/bin/
+	rsync -a $(XDG_CONFIG_HOME)/fzf/bin/* $(BIN_DIR)
 
 asdf:
 	@echo "### asdf ###"
@@ -49,48 +50,48 @@ asdf:
 ifeq ($(wildcard $(XDG_DATA_HOME)/asdf),)
 	git clone https://github.com/asdf-vm/asdf.git $(XDG_DATA_HOME)/asdf
 else
-	cd $(XDG_DATA_HOME)/asdf && git pull
+	(cd $(XDG_DATA_HOME)/asdf && git pull)
 endif
-	@source $(XDG_DATA_HOME)/asdf/asdf.sh && asdf plugin add golang || true
-	@source $(XDG_DATA_HOME)/asdf/asdf.sh && asdf plugin add python || true
-	@source $(XDG_DATA_HOME)/asdf/asdf.sh && asdf plugin add rust || true
-	@source $(XDG_DATA_HOME)/asdf/asdf.sh && asdf plugin add nodejs || true
-	asdf install
+	source $(XDG_DATA_HOME)/asdf/asdf.sh && asdf plugin add golang || true
+	source $(XDG_DATA_HOME)/asdf/asdf.sh && asdf plugin add python || true
+	source $(XDG_DATA_HOME)/asdf/asdf.sh && asdf plugin add rust || true
+	source $(XDG_DATA_HOME)/asdf/asdf.sh && asdf plugin add nodejs || true
+	source $(XDG_DATA_HOME)/asdf/asdf.sh && asdf install
 
 bin:
 	@echo "### bin ###"
 ifeq ($(shell uname), Darwin)
 	curl -fLO "https://dl.k8s.io/release/$$(curl -L -s https://dl.k8s.io/release/stable.txt)/bin/darwin/arm64/kubectl"
-	curl -fLO  https://github.com/stedolan/jq/releases/download/jq-1.6/jq-osx-amd64
-	curl -fLO https://github.com/BurntSushi/ripgrep/releases/download/13.0.0/ripgrep-13.0.0-x86_64-apple-darwin.tar.gz
-	curl -fLO https://github.com/sharkdp/bat/releases/download/v0.23.0/bat-v0.23.0-x86_64-apple-darwin.tar.gz
-	curl -fLO https://github.com/x-motemen/ghq/releases/download/v1.4.2/ghq_darwin_arm64.zip
+	curl -s https://api.github.com/repos/stedolan/jq/releases/latest | grep "browser_download_url.*osx" | cut -d : -f 2,3 | tr -d \" | xargs -n1 curl -fLO
+	curl -s https://api.github.com/repos/BurntSushi/ripgrep/releases/latest | grep "browser_download_url.*darwin" | cut -d : -f 2,3 | tr -d \" | xargs -n1 curl -fLO
+	curl -s https://api.github.com/repos/sharkdp/bat/releases/latest | grep "browser_download_url.*darwin" | cut -d : -f 2,3 | tr -d \" | xargs -n1 curl -fLO
+	curl -s https://api.github.com/repos/x-motemen/ghq/releases/latest | grep "browser_download_url.*darwin_arm" | cut -d : -f 2,3 | tr -d \" | xargs -n1 curl -fLO
 endif
 ifeq ($(shell uname), Linux)
 	curl -fLO "https://dl.k8s.io/release/$$(curl -L -s https://dl.k8s.io/release/stable.txt)/bin/linux/amd64/kubectl"
-	curl -fLO https://github.com/stedolan/jq/releases/download/jq-1.6/jq-linux64
-	curl -fLO https://github.com/BurntSushi/ripgrep/releases/download/13.0.0/ripgrep-13.0.0-x86_64-unknown-linux-musl.tar.gz
-	curl -fLO https://github.com/sharkdp/bat/releases/download/v0.23.0/bat-v0.23.0-aarch64-unknown-linux-gnu.tar.gz
-	curl -fLO https://github.com/x-motemen/ghq/releases/download/v1.4.2/ghq_linux_amd64.zip
+	curl -s https://api.github.com/repos/stedolan/jq/releases/latest | grep "browser_download_url.*linux64" | cut -d : -f 2,3 | tr -d \" | xargs -n1 curl -fLO
+	curl -s https://api.github.com/repos/BurntSushi/ripgrep/releases/latest | grep "browser_download_url.*linux-musl" | cut -d : -f 2,3 | tr -d \" | xargs -n1 curl -fLO
+	curl -s https://api.github.com/repos/sharkdp/bat/releases/latest | grep "browser_download_url.*x86_64.*linux-musl" | cut -d : -f 2,3 | tr -d \" | xargs -n1 curl -fLO
+	curl -s https://api.github.com/repos/x-motemen/ghq/releases/latest | grep "browser_download_url.*linux_amd64" | cut -d : -f 2,3 | tr -d \" | xargs -n1 curl -fLO
 endif
 ifeq ($(wildcard kubectl),)
 	chmod +x $(PWD)/kubectl
-	rsync -a kubectl $(HOME)/.local/bin
+	rsync -a kubectl $(BIN_DIR)
 	rm -f kubectl
 endif
 ifeq ($(wildcard jq),)
 	chmod +x $(PWD)/jq*
-	rsync -a jq* $(HOME)/.local/bin
+	rsync -a jq* $(BIN_DIR)/jq
 	rm -f jq*
 endif
 ifeq ($(wildcard ripgrep),)
 	tar xvzf $$(ls ripgrep*.tar.gz)
-	rsync -a ripgrep*/rg $(HOME)/.local/bin
+	rsync -a ripgrep*/rg $(BIN_DIR)
 	rm -rf ripgrep*
 endif
 ifeq ($(wildcard bat),)
 	tar xvzf $$(ls bat*.tar.gz)
-	rsync -a bat*/bat $(HOME)/.local/bin
+	rsync -a bat*/bat $(BIN_DIR)
 	rm -rf bat*
 endif
 ifeq ($(wildcard ghq),)
@@ -104,6 +105,6 @@ clean:
 	rm -f $(HOME)/.vimrc $(HOME)/.vim/autoload/plug.vim
 	rm -f $(HOME)/.tmux.conf
 	rm -f $(HOME)/{.zshrc,.zsh_prompt} $(XDG_DATA_CONFIG_HOME)/zsh-syntax-highlighting
-	rm -rf $(XDG_CONFIG_HOME)/fzf $(HOME)/.local/bin/fzf*
+	rm -rf $(XDG_CONFIG_HOME)/fzf $(BIN_DIR)/fzf*
 	rm -rf $(HOME)/.tool-versions $(XDG_DATA_HOME)/asdf
-	rm -f $(HOME)/.local/bin/{kubectl,jq,rg,bat,ghq}
+	rm -f $(BIN_DIR)/{kubectl,jq,rg,bat,ghq}
