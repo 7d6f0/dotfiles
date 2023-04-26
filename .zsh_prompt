@@ -49,34 +49,51 @@ zstyle ':vcs_info:git+set-message:*' hooks git-hook-begin git-untracked git-not-
   hook_com[misc]+=$not_pushed
 }
 
-_update_prompt() {
+_get_vcs_info() {
   local messages
-  local prompt="%F{73}%n%f at %F{74}%M%f in %F{75}%d%f"
-  if [[ -n "$vcs_info_msg_0_" ]]; then
-    [[ -n "$vcs_info_msg_0_" ]] && messages+=("%F{98}${vcs_info_msg_0_}%f")
-    [[ -n "$vcs_info_msg_1_" ]] && messages+=("%F{99}${vcs_info_msg_1_}%f")
-    [[ -n "$vcs_info_msg_2_" ]] && messages+=("%F{160}${vcs_info_msg_2_}%f")
-    prompt+="${(j: :)messages}"
-  fi
+  [[ -n "$vcs_info_msg_0_" ]] && messages+=("%F{13}${vcs_info_msg_0_}%f")
+  [[ -n "$vcs_info_msg_1_" ]] && messages+=("%F{216}${vcs_info_msg_1_}%f")
+  [[ -n "$vcs_info_msg_2_" ]] && messages+=("%F{160}${vcs_info_msg_2_}%f")
+  echo "${(j: :)messages}"
+}
+
+_get_venv_info() {
   local virtualenv
   virtualenv=$VIRTUAL_ENV
   if [ -n "$virtualenv" ]; then
     local venv
     venv=$(basename "$(dirname "$virtualenv")")
-    prompt+=" venv:${venv}"
+    echo "venv:${venv}"
   fi
-  if command -v kubectl > /dev/null;then
+}
+
+_get_kube_info() {
+  if command -v kubectl > /dev/null; then
     if kubectl config current-context > /dev/null 2>&1; then
-      prompt+=" $(kubectl config current-context):$(kubectl config view --minify --output 'jsonpath={..namespace}'; echo)"
+      echo "$(kubectl config current-context):$(kubectl config view --minify --output 'jsonpath={..namespace}'; echo)"
     fi
   fi
-  prompt+=" %F{240}[%D{%Y-%m-%d %H:%M:%S}]%f"
+}
+
+_update_prompt() {
+  local prompt="%F{73}%M%f %F{74}%d%f"
+  local vcs_info
+  local venv_info
+  local kube_info
+  vcs_info=$(_get_vcs_info)
+  venv_info=$(_get_venv_info)
+  kube_info=$(_get_kube_info)
+
+  [[ -n "$vcs_info" ]] && prompt+="${vcs_info}"
+  [[ -n "$venv_info" ]] && prompt="(${venv_info}) ${prompt}"
+  [[ -n "$kube_info" ]] && prompt+=" ${kube_info}"
+
   print "$prompt"
 }
 
 precmd() {
   prompt='$(_update_prompt)
-%(?.%F{72}.%F{160})%#%f '
+%(?.%F{2}.%F{1})%#%f '
 }
 
 re-prompt() {
