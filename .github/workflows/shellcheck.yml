@@ -14,6 +14,6 @@ jobs:
     steps:
     - uses: actions/checkout@v3.5.2
     - name: Run ShellCheck
-      run: shellcheck -e SC2148,SC1091 .zshrc
+      run: shellcheck -e SC2148,SC1091,SC2034 .zshrc
     - name: Run ShellCheck
       run: shellcheck -e SC2148,SC1091,SC2154,SC2016,SC2128,SC2296,SC2207 .zsh_prompt

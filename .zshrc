@@ -80,11 +80,17 @@ fi
 [ -f "${XDG_CONFIG_HOME:-$HOME/.config}"/fzf/fzf.zsh ] && source "${XDG_CONFIG_HOME:-$HOME/.config}"/fzf/fzf.zsh
 
 # ghq
-ghq_list() {
-  cd "$(ghq list --full-path | fzf-tmux "${=FZF_TMUX_OPTS}")" || exit
+function fzf_ghq_list() {
+  local repo
+  repo=$(ghq list --full-path | fzf-tmux "${=FZF_TMUX_OPTS}")
+  if [ -n "$repo" ]; then
+    BUFFER="cd $repo"
+    zle accept-line
+  fi
+  zle -R -c
 }
-zle -N ghq_list_widget ghq_list
-bindkey "^G" ghq_list_widget
+zle -N fzf_ghq_list
+bindkey "^G" fzf_ghq_list
 
 # zsh-syntax-highlighting
 source "$XDG_DATA_HOME"/zsh-syntax-highlighting/zsh-syntax-highlighting.zsh
