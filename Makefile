@@ -65,7 +65,7 @@ ifeq ($(shell uname), Darwin)
 	curl -s https://api.github.com/repos/stedolan/jq/releases/latest | grep "browser_download_url.*osx" | cut -d : -f 2,3 | tr -d \" | xargs -n1 curl -fLO
 	curl -s https://api.github.com/repos/BurntSushi/ripgrep/releases/latest | grep "browser_download_url.*darwin" | cut -d : -f 2,3 | tr -d \" | xargs -n1 curl -fLO
 	curl -s https://api.github.com/repos/sharkdp/bat/releases/latest | grep "browser_download_url.*darwin" | cut -d : -f 2,3 | tr -d \" | xargs -n1 curl -fLO
-	curl -s https://api.github.com/repos/x-motemen/ghq/releases/latest | grep "browser_download_url.*darwin_arm" | cut -d : -f 2,3 | tr -d \" | xargs -n1 curl -fLO
+	curl -s https://api.github.com/repos/x-motemen/ghq/releases/latest | grep "browser_download_url.*darwin_amd" | cut -d : -f 2,3 | tr -d \" | xargs -n1 curl -fLO
 endif
 ifeq ($(shell uname), Linux)
 	curl -fLO "https://dl.k8s.io/release/$$(curl -L -s https://dl.k8s.io/release/stable.txt)/bin/linux/amd64/kubectl"
