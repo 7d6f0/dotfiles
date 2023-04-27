@@ -15,7 +15,7 @@ bindkey "^[u" undo
 bindkey "^[r" redo
 bindkey "^[[Z" reverse-menu-complete
 
-HISTFILE=~/.zsh_history
+HISTFILE=$HOME/.zsh_history
 SAVEHIST=1000000
 HISTSIZE=$SAVEHIST
 setopt share_history
@@ -93,10 +93,10 @@ zle -N fzf_ghq_list
 bindkey "^G" fzf_ghq_list
 
 # zsh-syntax-highlighting
-source "$XDG_DATA_HOME"/zsh-syntax-highlighting/zsh-syntax-highlighting.zsh
+[ -f "$XDG_DATA_HOME"/zsh-syntax-highlighting/zsh-syntax-highlighting.zsh ] && source "$XDG_DATA_HOME"/zsh-syntax-highlighting/zsh-syntax-highlighting.zsh
 
 ## prompt
 TERM=xterm-256color
-[ -f ~/.zsh_prompt ] && source "$HOME/.zsh_prompt"
+[ -f "$HOME"/.zsh_prompt ] && source "$HOME"/.zsh_prompt
 
 autoload -Uz compinit && compinit
