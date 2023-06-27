@@ -35,7 +35,6 @@ hi clear CursorLine
 set number
 set showmatch
 set matchtime=1
-set shiftwidth=4
 set autoindent
 set smartindent
 set splitright
